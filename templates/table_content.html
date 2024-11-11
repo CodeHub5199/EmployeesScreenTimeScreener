@@ -1,0 +1,26 @@
+<tr>
+    <th>Machine Name</th>
+    <th>Username</th>
+    <th>Status</th>
+    <th>Duration in Minutes</th>
+    <th>Last Updated</th>
+</tr>
+{% for record in latest_records %}
+<tr onclick="location.href='{{ url_for('graph', username=record.username) }}'">
+    <td>{{ record.machine_name }}</td>
+    <td>{{ record.username }}</a></td>
+    <td style="{% if (current_datetime - record.timestamp).total_seconds() / 60 > 2 %}background-color: #F8B4B4;{% elif record.isidle == 'True' %}background-color: #FCE96A;{% else %}background-color: #84E1BC;{% endif %}">
+        {% if (current_datetime - record.timestamp).total_seconds() / 60 > 2 %}
+            Offline
+        {% else %}
+            {% if record.isidle == "True" %}
+                Idle
+            {% else %}
+                Online
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>{{ record.idle_duration // 60 }}</td>
+    <td>{{ record.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+</tr>
+{% endfor %}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Screen Time Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      #user-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+      }
+
+      #user-table th {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+
+      #user-table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      #user-table tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .filter-container {
+        width: 30%;
+        height: 20px;
+        text-align: right;
+        border: 1px;
+        border-color: #030000;
+      }
+
+      .filter-container label {
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      .filter-dropdown {
+        padding: 10px;
+        border-color: #030000;
+        background-color: #f9f9f9;
+        cursor: pointer;
+        width: 60%;
+        height: 40px;
+        border: 1px solid #dedede; /* add border */
+        border-radius: 10px
+      }
+    </style>
+  </head>
+  <body>
+    
+
+      
+    <p class="ml-3 mt-3 text-5xl text-gray-900 dark:text-black">
+      Dashboard
+    </p> 
+
+    <hr
+      style="pt-1 width: 100%; max-width: 1200px "
+      class="mt-3 h-px my-8 bg-gray-100 border-2 dark:bg-gray-700"
+    />
+
+    
+    <div class="grid grid-cols-3 gap-1 mt-3 mb-3">
+      <!--<form class="ml-3 flex items-center">   
+        <label for="simple-search" style="80%;" class="sr-only ">Search</label>
+        <div class="relative w-full">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500" placeholder="Search Username..." required />
+        </div>
+        <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-purple-700 rounded-lg border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
+          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+          <span class="sr-only">Search</span>
+        </button>
+      </form> -->
+
+      <div class="ml-3 flex items-center">   
+        <label for="simple-search" style="80%;" class="sr-only ">Search</label>
+        <div class="relative w-full">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <input type="text" id="username-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500" placeholder="Search Username..." />
+        </div>
+        <button onclick="filterByUsername()" class="p-2.5 ms-2 text-sm font-medium text-white bg-purple-700 rounded-lg border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+            <span class="sr-only">Search</span>
+        </button>
+      </div>
+
+      
+      <div class="flex ml-6">
+        <label class="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600" for="status-filter">Filter By Status</label>
+        <div id="dropdown" style="width: 600px;">
+          <select id="status-filter" onchange="filterByStatus()" style="width: 190px;" class="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600" for="status-filter">
+            <option value="all">All</option>
+            <option value="online">Online</option>
+            <option value="idle">Idle</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+      </div>
+  
+      <!-- EXPORT AS CSV BUTTON -->
+       <!-- <div>
+        <button data-tooltip-target="tooltip-default" type="button" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">Create Daily Report</button>
+
+        <div id="tooltip-default" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+            Create daily report of all employees. For best results, generate a report afte working hours.
+            <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
+      </div>-->
+
+      <!-- Reports -->
+      <div class="ml-3">
+        <button id="dropdownDefaultButton" data-dropdown-toggle="report_dropdown" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800" type="button">Create Report<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+          </svg>
+        </button>
+      </div>
+        
+      <!-- Dropdown menu -->
+      <div id="report_dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+          <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+              <li>
+                  <a href="#" id="daily" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="selectReport('daily')">Daily Report</a>
+              </li>
+              <li>
+                <a href="#" id="custom_day" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="selectReport('custom_day')">Custom Day Report</a>
+              </li>
+              <li>
+                  <a href="#" id="custom" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="selectReport('custom')">Custom Dates Report</a>
+              </li>
+          </ul>
+      </div>
+
+      <!-- Add a form to submit the selected report type -->
+      <form action="/report" method="post" id="report-form">
+        <input type="hidden" id="selected_report" name="report_type">
+      </form>
+
+    </div>
+
+    <div class="ml-3 mr-3 pt-3" style="border: 1px solid #ccc; border-radius: 10px" id="chart"></div>
+
+    <div id="report-container"></div>
+
+    
+    <table id="user-table" class="ml-3 mt-3" style="width: 98.5%;">
+      <thead>
+        <tr>
+          <th>Machine Name</th>
+          <th>Username</th>
+          <th>Status</th>
+          <th>Duration (seconds)</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% include 'table_content.html' %}
+      </tbody>
+    </table>
+
+
+    <script>
+      var options = {
+        series: [{
+        name: 'Online',
+        data: [50],
+        
+      }, {
+        name: 'Idle',
+        data: [30]
+      }, {
+        name: 'Offline',
+        data: [10]
+      }],
+        chart: {
+        type: 'bar',
+        height: 180,
+        stacked: true,
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          dataLabels: {
+            total: {
+              enabled: true,
+              offsetX: 0,
+              style: {
+                fontSize: '19px',
+                fontWeight: 900
+              }
+            }
+          }
+        },
+      },
+      stroke: {
+        width: 1,
+        colors: ['#fff']
+      },
+      
+      title: {
+        text: 'Employees Distribution'
+      },
+      xaxis: {
+        categories: ['Employees'],
+        labels: {
+          formatter: function (val) {
+            return val
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: undefined
+        },
+      },
+      tooltip: {
+        y: {
+          formatter: function (val) {
+            return val
+          }
+        }
+      },
+      fill: {
+        colors: ['#84E1BC', '#FCE96A', '#F8B4B4'],
+        opacity: 1,
+        
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        offsetX: 40,
+        fontSize: '15px',
+        fontWeight: 900
+      }
+      };
+
+      var chart = new ApexCharts(document.querySelector("#chart"), options);
+      chart.render();
+    </script>
+
+    <script>
+      function refreshTable() {
+        var status = document.getElementById("status-filter").value;
+        $.ajax({
+          type: "GET",
+          url: "/refresh-table",
+          data: { status: status },
+          success: function (data) {
+            $("#user-table").html(data);
+          },
+        });
+      }
+
+      setInterval(refreshTable, 2000);
+      // Reset search when refreshTable is called
+      setInterval(function () {
+        document.getElementById("search-input").value = "";
+        searchUser();
+      }, 2000);
+
+      function filterByStatus() {
+        var status = document.getElementById("status-filter").value;
+        var table = document.getElementById("user-table");
+        var tr = table.getElementsByTagName("tr");
+
+        for (var i = 0; i < tr.length; i++) {
+          var statusCell = tr[i]
+            .getElementsByTagName("td")[2]
+            .textContent.toLowerCase();
+          if (status === "all" || statusCell.includes(status)) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    </script>
+        
+    <script>
+        function filterByUsername() {
+          var username_searched = document.getElementById("username-search").value;
+          console.log('username: ', username_searched);
+      
+          fetch('/get_username', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              username: username_searched,
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            // Update the table content dynamically
+            var tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = '';
+            data.latest_records.forEach(record => {
+              var row = document.createElement("tr");
+              row.innerHTML = `
+                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  ${record.username}
+                </th>
+                <td class="px-6 py-4">
+                  ${record.machine_name}
+                </td>
+                <!-- Add more columns as needed -->
+              `;
+              tableBody.appendChild(row);
+            });
+          })
+        }
+    
+    </script>
+
+    <script>
+        function selectReport(reportType) {
+          document.getElementById("selected_report").value = reportType;
+          document.getElementById("report-form").submit();
+      }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Employee Screen Status Graphs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+    
+  </head>
+  <body style="background-color: #F7F7F7;">
+    <h1 class="ml-3 mt-2">Employee Screen Status Graphs</h1>
+
+
+    <div id="date-range-picker" date-rangepicker class="ml-3 inline-flex items-center">
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+          </svg>
+        </div>
+        <input id="datepicker-range-start" name="start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date start">
+      </div>
+      <span class="mx-4 text-gray-500">to</span>
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+          </svg>
+        </div>
+        <input id="datepicker-range-end" name="end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
+      </div>
+    </div>
+    <button id="submit-btn" onclick="getSelectedDates()" type="button" class="mt-3 ml-3 focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Submit</button>
+    
+    <canvas class="ml-3" id="daily_chart" style="width: 100%; max-width: 1200px"></canvas>
+    
+    <script>
+      var xValues = {{ daily_dates | tojson }};
+      var yValues1 = {{ daily_active_hours | tojson }};
+      var yValues2 = {{ daily_idle_hours | tojson }};
+    
+      console.log('dates: '+ xValues)
+    
+      // Declare chart variable outside getSelectedDates function
+      let daily_chart;
+        // Initialize chart for the first time
+  const ctx = document.getElementById('daily_chart').getContext('2d');
+  daily_chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [
+        {
+          label: "Active Hours",
+          backgroundColor: "#4682b4",
+          data: yValues1,
+        },
+        {
+          label: "Idle Hours",
+          backgroundColor: "#FFA07A",
+          data: yValues2,
+        },
+      ],
+    },
+    options: {
+      legend: { display: true },
+      title: {
+        display: true,
+        text: "",
+      },
+      scales: {
+        yAxes: [{
+          scaleLabel: {
+              display: true,
+              labelString: "Duration (hours)",
+            },
+          ticks: {
+            beginAtZero: true,
+          },
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: "Dates",
+          },
+        }]
+      },
+    },
+  });
+
+  // Function to get selected dates and update chart
+  function getSelectedDates() {
+    
+    const startDateInput = document.getElementById('datepicker-range-start');
+    const endDateInput = document.getElementById('datepicker-range-end');
+    
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+    const username = "{{ username }}"
+    
+    console.log('Selected Dates:');
+    console.log('Start Date:', startDate);
+    console.log('End Date:', endDate);
+    
+    // Send dates to Flask app using fetch API
+    fetch('/get_dates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        start_date: startDate,
+        end_date: endDate,
+        username: username,
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+
+      // Destroy existing chart
+      if (daily_chart) {
+        daily_chart.destroy();
+      }
+      
+      // Update chart with received data
+      xValues = data.daily_dates;
+      yValues1 = data.daily_active_hours;
+      yValues2 = data.daily_idle_hours;
+      
+      // Create new chart
+      const ctx = document.getElementById('daily_chart').getContext('2d');
+      daily_chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: xValues,
+          datasets: [
+            {
+              label: "Active Hours",
+              backgroundColor: "#4682b4",
+              data: yValues1,
+            },
+            {
+              label: "Idle Hours",
+              backgroundColor: "#FFA07A",
+              data: yValues2,
+            },
+          ],
+        },
+        options: {
+          legend: { display: true },
+          title: {
+            display: true,
+            text: "",
+          },
+          scales: {
+            yAxes: [{
+              scaleLabel: {
+                  display: true,
+                  labelString: "Duration (hours)",
+                },
+              ticks: {
+                beginAtZero: true,
+              },
+            }],
+            xAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: "Dates",
+              },
+            }]
+          },
+        },
+      });
+    })
+    .catch(error => console.error(error));
+  }
+</script>
+
+  <!-- HOURLY CHART BEGIN -->
+
+    <button id="dropdownHoverButton" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="hover" class="ml-3 text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800" type="button">Dropdown hover <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+      </svg>
+      </button>
+      
+      <!-- Dropdown menu -->
+      <div id="dropdownHover" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownHoverButton">
+            {% for item in hourly_merged_dataframe %}
+              <li>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="getSelectedValue('{{ item.date }}')">{{ item.date }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+      </div>
+
+      <div class="ml-3 mb-3">
+        <p id="selected-date"></p>
+        <canvas id="hourly_chart" style="width: 100%; max-width: 1200px"></canvas>
+      </div>
+
+      <script>
+        function getSelectedValue(date) {
+          console.log("Selected Value: ", date);
+          document.getElementById('selected-date').textContent = `Selected Date: ${date}`;
+
+          // You can also call the updateChart function from here
+          updateChart(date);
+          event.stopPropagation();
+          event.preventDefault();
+        }
+        var chart = null; // Declare chart variable outside updateChart function
+        function updateChart(date) {
+          console.log('in updateChart')
+          console.log('date in updateChart: '+ date);
+          const df_list = {{ hourly_merged_dataframe | tojson }};
+
+          // Clear previous chart
+          if (chart) {
+            chart.destroy();
+            console.log('chart destroyed');
+          }
+
+          for (var i = 0; i < df_list.length; i++) {
+            var item = df_list[i];
+            if (date == item.date) {
+              // Assign arrays to variables
+              const dateArray = Object.values(item.data['date']);
+              const hourRangeArray = Object.values(item.data['hour_range']);
+              const activeDurationArray = Object.values(item.data['duration_active']);
+              const idleDurationArray = Object.values(item.data['duration_idle']);
+              
+              console.log('dateArray:', dateArray);
+              console.log('hourRangeArray:', hourRangeArray);
+              console.log('activeDurationArray:', activeDurationArray);
+              console.log('idleDurationArray:', idleDurationArray);
+
+              var xValues = hourRangeArray;
+              var yValues1 = activeDurationArray ;
+              var yValues2 = idleDurationArray ;
+
+              chart = new Chart("hourly_chart", {
+                type: "bar",
+                data: {
+                  labels: xValues,
+                  datasets: [
+                    {
+                      label: "Active Minutes",
+                      backgroundColor: "#4682b4",
+                      data: yValues1,
+                    },
+                    {
+                      label: "Idle Minutes",
+                      backgroundColor: "#FFA07A",
+                      data: yValues2,
+                    },
+                  ],
+                },
+                options: {
+                  legend: { display: true },
+                  title: {
+                    display: true,
+                    text: "",
+                  },
+                  scales: {
+                    yAxes: [{
+                      scaleLabel: {
+                          display: true,
+                          labelString: "Duration (Minutes)",
+                        },
+                      ticks: {
+                        beginAtZero: true,
+                      },
+                    }],
+                    xAxes: [{
+                      scaleLabel: {
+                        display: true,
+                        labelString: "Dates",
+                      },
+                    }]
+                  },
+                },
+              });
+
+            }   
+          
+          }
+        }
+      </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </body>
+</html>
+
+
+
+

@@ -1,0 +1,6 @@
+<h1>Username Graphs</h1>
+<ul>
+  {% for username in usernames %}
+  <li><a href="{{ url_for('graph', username=username[0]) }}">{{ username[0] }}</a></li>
+  {% endfor %}
+</ul>
